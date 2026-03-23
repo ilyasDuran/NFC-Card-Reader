@@ -3,146 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Refik Kart | Dijital NFC Tarayıcı</title>
+    <title>Refik Kart | NFC Reader</title>
     <style>
         :root {
-            --primary-color: #007bff;
-            --success-color: #28a745;
-            --error-color: #dc3545;
-            --dark-bg: #121212;
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --success: #22c55e;
+            --error: #ef4444;
+            --bg: #f8fafc;
         }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: #f4f7f9;
+            background-color: var(--bg);
+            margin: 0;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            margin: 0;
-            color: #333;
+            color: #1e293b;
         }
 
-        .card {
+        .container {
             background: white;
             width: 90%;
-            max-width: 450px;
-            padding: 2rem;
+            max-width: 420px;
+            padding: 2.5rem;
             border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             text-align: center;
         }
 
-        .nfc-animation {
-            width: 100px;
-            height: 100px;
+        .logo-area {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .nfc-icon-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
             margin: 0 auto 1.5rem;
-            background: #eef2ff;
+            background: #dbeafe;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
 
         .pulse {
             position: absolute;
             width: 100%;
             height: 100%;
-            border: 2px solid var(--primary-color);
+            border: 3px solid var(--primary);
             border-radius: 50%;
-            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+            opacity: 0;
+            display: none;
         }
 
-        @keyframes pulse-ring {
-            0% { transform: scale(.33); opacity: 1; }
-            80%, 100% { transform: scale(1.5); opacity: 0; }
+        .active-scan .pulse {
+            display: block;
+            animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
         }
 
-        h1 { font-size: 1.8rem; margin: 0 0 0.5rem; color: #1a1a1a; }
-        p { color: #666; line-height: 1.5; margin-bottom: 2rem; }
+        @keyframes ping {
+            75%, 100% { transform: scale(1.8); opacity: 0; }
+            0% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 { font-size: 1.5rem; margin: 0; color: #0f172a; }
+        p { color: var(--secondary); margin: 0.5rem 0 2rem; font-size: 0.95rem; }
 
         .btn {
-            background: var(--primary-color);
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 16px 32px;
-            border-radius: 14px;
-            font-size: 1.1rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
         }
 
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+        .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
 
-        #logContainer {
+        #resultPanel {
             margin-top: 1.5rem;
             text-align: left;
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 1rem;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.85rem;
             display: none;
-            border: 1px solid #eee;
+            animation: slideUp 0.3s ease-out;
         }
 
-        .data-item {
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #ddd;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .label { font-weight: bold; color: var(--primary-color); text-transform: uppercase; font-size: 0.7rem; display: block; }
-        .value { font-size: 1rem; color: #222; word-break: break-all; }
+        .data-card {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
 
-        .badge {
+        .data-label { font-size: 0.75rem; color: var(--secondary); text-transform: uppercase; font-weight: 700; }
+        .data-value { font-family: monospace; font-size: 1.1rem; color: #1e293b; word-break: break-all; margin-bottom: 0.8rem; display: block; }
+
+        .status-badge {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            background: #eee;
-            margin-top: 5px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 1rem;
         }
 
-        footer { margin-top: 2rem; font-size: 0.8rem; color: #999; }
+        .status-ok { background: #dcfce7; color: #166534; }
+        .status-info { background: #fef9c3; color: #854d0e; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <div class="nfc-animation" id="animationBox" style="display: none;">
+    <div class="container" id="mainContainer">
+        <div class="logo-area">Refik Kart</div>
+        
+        <div class="nfc-icon-wrapper" id="iconWrapper">
             <div class="pulse"></div>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#007bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)">
+                <path d="M20 4v16M4 4v16M8 12h8M12 8v8"/>
+            </svg>
         </div>
 
-        <h1>Refik Kart Okuyucu</h1>
-        <p id="statusMsg">NFC özellikli kimlik veya RFID kartınızı okutmak için aşağıdaki butona basın.</p>
+        <h1>NFC Tarayıcı</h1>
+        <p id="statusTxt">Kartınızı okutmak için butona basın ve telefonun arkasına yaklaştırın.</p>
 
         <button id="scanBtn" class="btn">Taramayı Başlat</button>
 
-        <div id="logContainer">
-            <div id="dataOutput"></div>
+        <div id="resultPanel">
+            <div class="data-card">
+                <span class="data-label">Kart Seri Numarası (UID)</span>
+                <span id="uidVal" class="data-value">-</span>
+                
+                <span class="data-label">İçerik / Mesaj</span>
+                <span id="msgVal" class="data-value" style="font-size: 0.9rem;">-</span>
+                
+                <div id="statusBadge" class="status-badge"></div>
+            </div>
         </div>
     </div>
 
-    <footer>Refik Kart Projesi v1.0 | Web NFC API</footer>
-
     <script>
         const scanBtn = document.getElementById('scanBtn');
-        const statusMsg = document.getElementById('statusMsg');
-        const logContainer = document.getElementById('logContainer');
-        const dataOutput = document.getElementById('dataOutput');
-        const animationBox = document.getElementById('animationBox');
+        const statusTxt = document.getElementById('statusTxt');
+        const resultPanel = document.getElementById('resultPanel');
+        const uidVal = document.getElementById('uidVal');
+        const msgVal = document.getElementById('msgVal');
+        const iconWrapper = document.getElementById('iconWrapper');
+        const statusBadge = document.getElementById('statusBadge');
 
-        // NFC Desteği Kontrolü
+        // NFC Destek Kontrolü
         if (!('NDEFReader' in window)) {
-            statusMsg.innerHTML = "❌ Tarayıcı Hatası: Web NFC bu cihazda desteklenmiyor. Lütfen Android'de Chrome kullanın.";
+            statusTxt.innerHTML = "❌ Hata: Bu tarayıcı NFC desteklemiyor. Lütfen Android Chrome kullanın.";
             scanBtn.disabled = true;
         }
 
@@ -151,65 +179,50 @@
                 const ndef = new NDEFReader();
                 await ndef.scan();
                 
-                // Arayüzü güncelle
-                statusMsg.innerText = "Temassız kart bekleniyor... Kartı telefonun arkasına (genelde kamera yanına) yaklaştırın.";
-                animationBox.style.display = "flex";
-                scanBtn.style.display = "none";
-                logContainer.style.display = "none";
-                dataOutput.innerHTML = "";
+                // UI Güncelleme: Tarama Modu
+                iconWrapper.classList.add('active-scan');
+                statusTxt.innerText = "Kart Bekleniyor... Lütfen temassız kartı yaklaştırın.";
+                scanBtn.innerText = "Dinleniyor...";
+                scanBtn.disabled = true;
+                resultPanel.style.display = "none";
 
                 ndef.addEventListener("readingerror", () => {
-                    alert("Kart algılandı ancak okunamadı. Kartın NDEF formatında olduğundan emin olun.");
+                    alert("Kart algılandı ancak veri okunamadı. Kartın standartlara uygun olduğundan emin olun.");
                 });
 
                 ndef.addEventListener("reading", ({ message, serialNumber }) => {
-                    // Kart okunduğunda cihaz titrer (tarayıcı varsayılanıdır)
-                    logContainer.style.display = "block";
-                    animationBox.style.display = "none";
-                    statusMsg.innerText = "Kart başarıyla okundu!";
+                    // Veri Geldi!
+                    iconWrapper.classList.remove('active-scan');
+                    resultPanel.style.display = "block";
+                    statusTxt.innerText = "İşlem Başarılı!";
+                    scanBtn.disabled = false;
+                    scanBtn.innerText = "Tekrar Tara";
 
-                    let htmlContent = "";
+                    // Seri No Yaz (Her zaman gelmeli)
+                    uidVal.innerText = serialNumber || "Bilinmiyor";
 
-                    // 1. Seri Numarası (UID) - Her zaman gelmeli
-                    htmlContent += `
-                        <div class="data-item">
-                            <span class="label">Kart Seri No (UID)</span>
-                            <span class="value">${serialNumber}</span>
-                        </div>
-                    `;
-
-                    // 2. Mesaj İçeriği (NDEF Verileri)
+                    // Mesajları Çöz
                     if (message.records.length > 0) {
-                        message.records.forEach((record, index) => {
+                        let content = "";
+                        for (const record of message.records) {
                             const decoder = new TextDecoder(record.encoding || 'utf-8');
-                            const decodedData = decoder.decode(record.data);
-                            
-                            htmlContent += `
-                                <div class="data-item">
-                                    <span class="label">Kayıt #${index + 1} (${record.recordType})</span>
-                                    <span class="value">${decodedData}</span>
-                                    <span class="badge">Format: ${record.mediaType || 'Standart Metin'}</span>
-                                </div>
-                            `;
-                        });
+                            content += `[${record.recordType}]: ${decoder.decode(record.data)}\n`;
+                        }
+                        msgVal.innerText = content;
+                        statusBadge.innerText = "NDEF Verisi Okundu";
+                        statusBadge.className = "status-badge status-ok";
                     } else {
-                        htmlContent += `
-                            <div class="data-item" style="color: #666; font-style: italic;">
-                                İçerik Verisi: Bu kartta okunabilir NDEF verisi bulunamadı (Kimlik veya Banka kartı olabilir).
-                            </div>
-                        `;
+                        msgVal.innerText = "Bu kartta açık veri (NDEF) bulunamadı.";
+                        statusBadge.innerText = "Güvenli/Boş Kart";
+                        statusBadge.className = "status-badge status-info";
                     }
-
-                    dataOutput.innerHTML = htmlContent;
-                    
-                    // Butonu geri getir
-                    scanBtn.style.display = "block";
-                    scanBtn.innerText = "Yeniden Tara";
                 });
 
             } catch (error) {
-                console.error("Hata:", error);
-                statusMsg.innerHTML = `⚠️ Hata: ${error.message}`;
+                console.error(error);
+                alert("NFC Başlatılamadı: " + error);
+                iconWrapper.classList.remove('active-scan');
+                scanBtn.disabled = false;
             }
         });
     </script>
