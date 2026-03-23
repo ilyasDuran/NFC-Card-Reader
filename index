@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refik Kart | NFC Okuyucu</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: #eff6ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        h1 { color: #1e293b; margin-bottom: 0.5rem; font-size: 1.5rem; }
+        p { color: #64748b; margin-bottom: 1.5rem; }
+
+        #scanBtn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+
+        #scanBtn:active { transform: scale(0.98); }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            text-align: left;
+            display: none;
+            word-break: break-all;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="icon-circle">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+            <path d="M20 4v16M4 4v16M8 12h8M12 8v8"/>
+        </svg>
+    </div>
+    <h1>Refik Kart Okuyucu</h1>
+    <p id="statusTxt">NFC özelliğini kullanmak için butona bas ve kartı yaklaştır.</p>
+    
+    <button id="scanBtn">Taramayı Başlat</button>
+
+    <div id="result">
+        <strong>Kart Bilgileri:</strong>
+        <div id="dataContent" style="margin-top: 10px; font-family: monospace; font-size: 0.9rem;"></div>
+    </div>
+</div>
+
+<script>
+    const scanBtn = document.getElementById('scanBtn');
+    const resultDiv = document.getElementById('result');
+    const dataContent = document.getElementById('dataContent');
+    const statusTxt = document.getElementById('statusTxt');
+
+    scanBtn.addEventListener('click', async () => {
+        if ('NDEFReader' in window) {
+            try {
+                const ndef = new NDEFReader();
+                await ndef.scan();
+                
+                statusTxt.innerHTML = '<span class="status-dot"></span> Kart Bekleniyor...';
+                scanBtn.innerText = "Kapat";
+
+                ndef.onreading = ({ message, serialNumber }) => {
+                    resultDiv.style.display = 'block';
+                    let content = `<b>Seri No:</b> ${serialNumber}<br>`;
+                    
+                    for (const record of message.records) {
+                        const textDecoder = new TextDecoder(record.encoding);
+                        content += `<b>Veri Tipi:</b> ${record.recordType}<br>`;
+                        content += `<b>İçerik:</b> ${textDecoder.decode(record.data)}<br>`;
+                    }
+                    dataContent.innerHTML = content;
+                };
+
+                ndef.onreadingerror = () => {
+                    alert("Kart okunamadı. Lütfen tekrar deneyin.");
+                };
+
+            } catch (error) {
+                alert("Hata: " + error);
+            }
+        } else {
+            alert("Üzgünüm, bu tarayıcı Web NFC desteklemiyor. Lütfen Android üzerinde Chrome kullanın.");
+        }
+    });
+</script>
+
+</body>
+</html>
